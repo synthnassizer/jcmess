@@ -141,7 +141,6 @@ void JcMess::writeOutput(string OutFile)
       exit(1);
     }
     
-    //TODO save the file
     file << ss.rdbuf();
     file.close();
     cout << OutFile << " written." << endl;
@@ -231,20 +230,26 @@ int JcMess::parseTextFile(string InFile)
   vector<string> OutputInput(2);
   const string delimiter = SEPARATOR ;
 
+  //TODO add error checking in getline and string operations
   while (!file.eof()) {
     string line; 
     getline(file,line);
 
-    size_t pos = 0;
-    pos = line.find(delimiter);
-    OutputInput[0] = line.substr(0, pos);
-    cout << OutputInput[0] << endl;
-    line.erase(0, pos + delimiter.length());
-    OutputInput[1] = line ;
-    mPortsToConnect.push_back(OutputInput);
+    if (line.length() > 0) {
+      size_t pos = 0;
+      pos = line.find(delimiter);
+      OutputInput[0] = line.substr(0, pos);
+      line.erase(0, pos + delimiter.length());
+      OutputInput[1] = line ;
+      mPortsToConnect.push_back(OutputInput);
+
+      //cout << OutputInput[0] << endl;
+      //cout << OutputInput[1] << endl;
+    }
   } 
 
   file.close();
+  //cout << "vec size = " << mPortsToConnect.size() << endl; 
 
   return 0;
   
@@ -264,6 +269,8 @@ void JcMess::connectPorts(string InFile)
     for (vector<vector<string> >::iterator it = mPortsToConnect.begin();
 	 it != mPortsToConnect.end(); ++it) {
       OutputInput = *it;
+
+      //cout << "CON: " <<  OutputInput[0] << " <TO> " <<  OutputInput[1] << endl;
 
       if (jack_connect(mClient, OutputInput[0].c_str(), OutputInput[1].c_str())) {
 	//Display a warining only if the error is not because the ports are already
