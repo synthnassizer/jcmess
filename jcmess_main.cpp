@@ -76,7 +76,8 @@ void main_dialog( int argc, char* argv[] )
   static struct option longopts[] = {
     // These options don't set a flag.
     { "disconnectall", no_argument, NULL,  'd' },
-    { "connect", required_argument, NULL, 'c' },
+    { "unmount", required_argument, NULL, 'u' },
+    { "load", required_argument, NULL, 'l' },
     { "save", required_argument, NULL,  's' },
     { "DisconnectAll", no_argument, NULL,  'D' },
     { "version", no_argument, NULL, 'v' }, // Version Number
@@ -91,10 +92,10 @@ void main_dialog( int argc, char* argv[] )
   string answer = "";
   int ch;
   while ( (ch = getopt_long(argc, argv,
-                            "dc:s:Dvh", longopts, NULL)) != -1 )
+                            "du:l:s:Dvh", longopts, NULL)) != -1 )
     switch (ch) {
-    case 'd':
     //-------------------------------------------------------
+    case 'd':
     //Confirm before disconnection
     while ((answer != "yes") && (answer != "no")) {
       cout << "Are you sure you want to disconnect all? (yes/no): ";
@@ -104,20 +105,24 @@ void main_dialog( int argc, char* argv[] )
       jcmessClient.disconnectAll();
     }
     break;
-    case 'c':
     //-------------------------------------------------------
-    jcmessClient.connectPorts(optarg);
+    case 'l':
+    jcmessClient.connectPorts( optarg );
     break;
-    case 's':
     //-------------------------------------------------------
+    case 's':
     jcmessClient.writeOutput( optarg );
     break;
-    case 'D':
     //-------------------------------------------------------
+    case 'D':
     jcmessClient.disconnectAll();
     break;
-    case 'v':
     //-------------------------------------------------------
+    case 'u':
+    jcmessClient.disconnectClient( optarg );
+    break;
+    //-------------------------------------------------------
+    case 'v':
     cout << "JcMess VERSION: " << version << endl;
     cout << "Copyright (c) 2014-2015 Athanasios Silis." << endl;
     cout << "Copyright (c) 2007-2010 Juan-Pablo Caceres." << endl;
@@ -157,10 +162,11 @@ void printUsage()
   cout << "" << endl;
   cout << "Usage: " << endl;
   cout << "--------------------------------------------" << endl;
-  cout << " -h  --help                      Prints this help" << endl;
-  cout << " -c  --connect inputfile.jcmess  Load the connections specified at inputfile.xml" << endl;
-  cout << " -s  --save outputfile.jcmess    Save current connections in output.xml" << endl;
-  cout << " -d  --disconnectall             Disconnect all the connections" << endl;
-  cout << " -D  --DisconnectAll             Disconnect all the connections without confirmation" << endl;
+  cout << " -h  --help                    Prints this help" << endl;
+  cout << " -l  --load inputfile          Load the connections specified at inputfile" << endl;
+  cout << " -s  --save outputfile         Save current connections in output" << endl;
+  cout << " -u  --umount \"client name\"    Disconnect all connections to a specific jack client" << endl;
+  cout << " -d  --disconnectall           Disconnect all the connections" << endl;
+  cout << " -D  --DisconnectAll           Disconnect all the connections without confirmation" << endl;
   cout << "" << endl;
 }

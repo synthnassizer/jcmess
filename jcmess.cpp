@@ -1,8 +1,14 @@
 /*
-  JcMess: A simple utility so save your jack-audio mess.
+  jcmess: A simple utility so save your jack-audio mess. Fully written in c++.
 
-  Copyright (C) 2007-2010 Juan-Pablo Caceres.
-    
+          Based on Juan-Pablo Caceres JcMess , but without Qt hooks.
+
+          Also jcmess does not save to an XML file but to a simple text file as
+                client:port -#- client:port
+          so the separator is " -#- "
+
+  Copyright (C) 2014-2015 Athanasios Silis.
+
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
   files (the "Software"), to deal in the Software without
@@ -110,7 +116,7 @@ void JcMess::writeOutput(string OutFile)
     OutputInput = *it;
     //cout << "Output ===> " << OutputInput[0] << endl;
     //cout << "Input ===> " << OutputInput[1] << endl;
-    cout << OutputInput[0] << SEPARATOR << OutputInput[1] << endl;
+    //cout << OutputInput[0] << SEPARATOR << OutputInput[1] << endl;
     ss << OutputInput[0] << SEPARATOR << OutputInput[1] << endl;
 
   }
@@ -143,7 +149,7 @@ void JcMess::writeOutput(string OutFile)
     
     file << ss.rdbuf();
     file.close();
-    cout << OutFile << " written." << endl;
+    cout << OutFile << " writteni/saved to disk." << endl;
   }
 }
   
@@ -164,8 +170,7 @@ void JcMess::setConnectedPorts()
   ports = jack_get_ports (mClient, NULL, NULL, JackPortIsOutput);
   
   for (unsigned int out_i = 0; ports[out_i]; ++out_i) {
-    if ((connections = jack_port_get_all_connections 
-	 (mClient, jack_port_by_name(mClient, ports[out_i]))) != 0) {
+    if ((connections = jack_port_get_all_connections(mClient, jack_port_by_name(mClient, ports[out_i]))) != 0) {
       for (unsigned int in_i = 0; connections[in_i]; ++in_i) {
 	OutputInput[0] = ports[out_i];
 	//cout << "Output ===> " << OutputInput[0] << endl;
@@ -191,8 +196,7 @@ void JcMess::disconnectAll()
   
   this->setConnectedPorts();
   
-  for (vector<vector<string> >::iterator it = mConnectedPorts.begin();
-       it != mConnectedPorts.end(); ++it) {
+  for (vector<vector<string> >::iterator it = mConnectedPorts.begin(); it != mConnectedPorts.end(); ++it) {
     OutputInput = *it;
     
     if (jack_disconnect(mClient, OutputInput[0].c_str(), OutputInput[1].c_str())) {
@@ -257,7 +261,7 @@ int JcMess::parseTextFile(string InFile)
 
 
 //-------------------------------------------------------------------------------
-/*! \brief Connect ports specified in input XML file InFile
+/*! \brief Connect ports specified in input Text file InFile
  *
  */
 //-------------------------------------------------------------------------------
@@ -266,8 +270,7 @@ void JcMess::connectPorts(string InFile)
   vector<string> OutputInput(2);
 
   if ( !(this->parseTextFile(InFile)) ) {  
-    for (vector<vector<string> >::iterator it = mPortsToConnect.begin();
-	 it != mPortsToConnect.end(); ++it) {
+    for (vector<vector<string> >::iterator it = mPortsToConnect.begin(); it != mPortsToConnect.end(); ++it) {
       OutputInput = *it;
 
       //cout << "CON: " <<  OutputInput[0] << " <TO> " <<  OutputInput[1] << endl;
@@ -277,12 +280,45 @@ void JcMess::connectPorts(string InFile)
 	//connected, in case the program doesn't display anyting.
 	if (EEXIST != 
 	    jack_connect(mClient, OutputInput[0].c_str(), OutputInput[1].c_str())) {
-	  cerr << "WARNING: port: " << OutputInput[0]
-	       << "and port: " << OutputInput[1]
-	       << " could not be connected.\n";
+          cerr << "WARNING! port| " << OutputInput[0]
+	   << " |and port| " << OutputInput[1]
+	   << " |could not be connected.\n";
 	}
       }
     }
   }
 
 }
+
+//-------------------------------------------------------------------------------
+/*! \brief Disconnect client with name "clientName"
+ *
+ */
+//-------------------------------------------------------------------------------
+void JcMess::disconnectClient(string clientName)
+{
+    vector<string> OutputInput(2);
+
+    this->setConnectedPorts();
+
+    for (vector<vector<string> >::iterator it = mConnectedPorts.begin(); it != mConnectedPorts.end(); ++it){
+        OutputInput = *it;
+
+        size_t cl0pos = OutputInput[0].find(clientName);
+        size_t cl1pos = OutputInput[1].find(clientName);
+        if (( cl0pos != string::npos ) || ( cl1pos != string::npos )) {
+            //cout << " DISCON: " << OutputInput[0] << " <FROM> " << OutputInput[1] << endl;
+            if (jack_disconnect(mClient, OutputInput[0].c_str(), OutputInput[1].c_str()))
+            {
+              cerr << "WARNING! port| " << OutputInput[0]
+	       << " |and port| " << OutputInput[1]
+	       << " |could not be connected.\n";
+            }
+            else
+            {
+              cout << "DISCON: " << OutputInput[0] << " <FROM> " << OutputInput[1] << endl;
+            }
+        }
+    }
+}
+

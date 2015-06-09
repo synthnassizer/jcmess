@@ -1,7 +1,13 @@
 /*
-  JMess: A simple utility so save your jack-audio mess.
+  jcmess: A simple utility so save your jack-audio mess. Fully written in c++.
 
-  Copyright (C) 2007-2010 Juan-Pablo Caceres.
+          Based on Juan-Pablo Caceres JcMess , but without Qt hooks.
+
+          Also jcmess does not save to an XML file but to a simple text file as
+                client:port -#- client:port
+          so the separator is " -#- "
+
+  Copyright (C) 2014-2015 Athanasios Silis.
 
   Permission is hereby granted, free of charge, to any person
   obtaining a copy of this software and associated documentation
@@ -65,6 +71,7 @@ public:
   void disconnectAll();
   void writeOutput(string OutFile);
   void connectPorts(string InFile);
+  void disconnectClient(string clientName);
 
 private:
   void setConnectedPorts();

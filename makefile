@@ -23,7 +23,10 @@ all: $(SOURCES) $(EXECUTABLE)
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) -o $@ $(OBJECTS) $(LDFLAGS)
 
-.cpp.o: $(SOURCES) jcmess.h
+jcmess.o: jcmess.cpp jcmess.h
+	$(CC) -c $(CFLAGS) -o "$@" "$<"
+
+jcmess_main.o: jcmess_main.cpp jcmess.h
 	$(CC) -c $(CFLAGS) -o "$@" "$<"
 
 clean:
