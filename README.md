@@ -5,9 +5,9 @@
 A simple utility so save your jack-audio mess. Fully written in c++.
 Based on Juan-Pablo Caceres "JMess" utility
 
-    https://github.com/jcacerec/jmess-jack
+https://github.com/jcacerec/jmess-jack
 
-    https://ccrma.stanford.edu/groups/soundwire/software/jmess/
+https://ccrma.stanford.edu/groups/soundwire/software/jmess/
 
 JcMess is similar to jmess, but without Qt hooks (or requirement for qmake).
 
@@ -31,6 +31,4 @@ The rest of the functionality follows that of JMess
 `jcmess -d` disconnect all current connections (with user input)
 
 `jcmess -D` disconnect all current connections (without user input)
-
-Copyright (C) 2014-2015 Athanasios Silis.
 
