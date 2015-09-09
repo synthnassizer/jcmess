@@ -140,7 +140,7 @@ void main_dialog( int argc, char* argv[] )
   //----------------------------------------------------------------------------
   if (optind < argc) {
     cout << "------------------------------------------------------" << endl;
-    cout << "WARINING: The following entered options have no effect" << endl;
+    cout << "WARNING:  The following entered options have no effect" << endl;
     cout << "          They will be ignored!" << endl;
     cout << "          Type jcmess to see options." << endl;
     for( ; optind < argc; optind++) {

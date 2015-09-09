@@ -149,7 +149,7 @@ void JcMess::writeOutput(string OutFile)
     
     file << ss.rdbuf();
     file.close();
-    cout << OutFile << " writteni/saved to disk." << endl;
+    cout << OutFile << " written/saved to disk." << endl;
   }
 }
   
