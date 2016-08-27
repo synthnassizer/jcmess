@@ -70,12 +70,14 @@ public:
 
   void disconnectAll();
   void writeOutput(string OutFile);
-  void connectPorts(string InFile);
+  void connectPorts(string InFile,string clientName);
   void disconnectClient(string clientName);
 
 private:
-  void setConnectedPorts();
+  void getActiveConnectedPorts();
   int parseTextFile(string InFile);
+  void jackConnect(string connectionFrom, string connectionTo);
+  void jackDisconnect(string connectionFrom, string connectionTo, bool verbose);
 
   jack_client_t *mClient; //Class client
   jack_status_t mStatus; //Class client status

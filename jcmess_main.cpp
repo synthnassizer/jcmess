@@ -45,7 +45,7 @@ using namespace std;
 
 void main_dialog( int argc, char* argv[] );
 void printUsage();
-string version  = "0.1";
+string version  = "0.2";
 
 
 //*******************************************************************************
@@ -77,10 +77,12 @@ void main_dialog( int argc, char* argv[] )
     // These options don't set a flag.
     { "disconnectall", no_argument, NULL,  'd' },
     { "unmount", required_argument, NULL, 'u' },
+    { "mount", required_argument, NULL, 'm' },
     { "load", required_argument, NULL, 'l' },
     { "save", required_argument, NULL,  's' },
     { "DisconnectAll", no_argument, NULL,  'D' },
     { "version", no_argument, NULL, 'v' }, // Version Number
+    { "verbose", no_argument, NULL, 'V' }, // Version Number
     { "help", no_argument, NULL, 'h' }, // Print Help
     { NULL, 0, NULL, 0 }
   };
@@ -91,8 +93,11 @@ void main_dialog( int argc, char* argv[] )
   /// \todo Specify mandatory arguments
   string answer = "";
   int ch;
+  ///flag followed by "::" -> optional to place flag in CLI
+  ///flag followed by ":" -> required to place flag in CLI
+  ///flag followed by ""(=nothing) -> no argument
   while ( (ch = getopt_long(argc, argv,
-                            "du:l:s:Dvh", longopts, NULL)) != -1 )
+                            "du:m:l:s:DvVh", longopts, NULL)) != -1 )
     switch (ch) {
     //-------------------------------------------------------
     case 'd':
@@ -107,11 +112,15 @@ void main_dialog( int argc, char* argv[] )
     break;
     //-------------------------------------------------------
     case 'l':
-    jcmessClient.connectPorts( optarg );
+    jcmessClient.connectPorts( optarg , "null" );
     break;
     //-------------------------------------------------------
     case 's':
     jcmessClient.writeOutput( optarg );
+    break;
+    //-------------------------------------------------------
+    case 'V':
+    jcmessClient.writeOutput( "" );
     break;
     //-------------------------------------------------------
     case 'D':
@@ -120,6 +129,18 @@ void main_dialog( int argc, char* argv[] )
     //-------------------------------------------------------
     case 'u':
     jcmessClient.disconnectClient( optarg );
+    break;
+    //-------------------------------------------------------
+    case 'm':
+    //see NOT the selected answer in http://stackoverflow.com/questions/3939157/c-getopt-multiple-value 
+    if (( optind < argc ) && (*argv[optind] != '-')) //optind already points to next arg than the one we current parse
+    {
+        cout << "client name = " << optarg << " , inputfilename = " << argv[optind] << endl;
+        jcmessClient.connectPorts( string(argv[optind]) , optarg );
+        optind++; //advance to next arg
+    }
+    else
+        cout << " command reguires 2 args:  -m <clientname> <inputfile>" << endl;
     break;
     //-------------------------------------------------------
     case 'v':
@@ -163,10 +184,13 @@ void printUsage()
   cout << "Usage: " << endl;
   cout << "--------------------------------------------" << endl;
   cout << " -h  --help                    Prints this help" << endl;
+  cout << " -v  --version                 Prints version information" << endl;
   cout << " -l  --load inputfile          Load the connections specified at inputfile" << endl;
   cout << " -s  --save outputfile         Save current connections in output" << endl;
   cout << " -u  --umount \"client name\"    Disconnect all connections to a specific jack client" << endl;
+  cout << " -m  --mount \"client name\" inputfile   Connect all referrences to jack client, found in inputfile" << endl;
   cout << " -d  --disconnectall           Disconnect all the connections" << endl;
   cout << " -D  --DisconnectAll           Disconnect all the connections without confirmation" << endl;
+  cout << " -V  --verbose                 Same as --save but dumps the connections to stdout" << endl;
   cout << "" << endl;
 }

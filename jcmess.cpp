@@ -108,20 +108,22 @@ bool fileExists(const std::string& filename)
 void JcMess::writeOutput(string OutFile)
 {
   stringstream ss;
-  vector<string> OutputInput(2);
+  vector<string> connectionPair(2);
 
-  this->setConnectedPorts();
+  this->getActiveConnectedPorts();
 
   for (vector<vector<string> >::iterator it = mConnectedPorts.begin(); it != mConnectedPorts.end(); ++it) {
-    OutputInput = *it;
-    //cout << "Output ===> " << OutputInput[0] << endl;
-    //cout << "Input ===> " << OutputInput[1] << endl;
-    //cout << OutputInput[0] << SEPARATOR << OutputInput[1] << endl;
-    ss << OutputInput[0] << SEPARATOR << OutputInput[1] << endl;
+    connectionPair = *it;
+    //cout << "Output ===> " << connectionPair[0] << endl;
+    //cout << "Input ===> " << connectionPair[1] << endl;
+    //cout << connectionPair[0] << SEPARATOR << connectionPair[1] << endl;
+    ss << connectionPair[0] << SEPARATOR << connectionPair[1] << endl;
 
   }
 
   ofstream file;
+  if ( OutFile != "" )
+  {
   file.clear(file.failbit);
   file.clear(file.badbit);
 
@@ -151,6 +153,11 @@ void JcMess::writeOutput(string OutFile)
     file.close();
     cout << OutFile << " written/saved to disk." << endl;
   }
+  }
+  else
+  {
+    cout << ss.str() ;
+  }
 }
   
 
@@ -159,12 +166,12 @@ void JcMess::writeOutput(string OutFile)
  *
  */
 //-------------------------------------------------------------------------------
-void JcMess::setConnectedPorts()
+void JcMess::getActiveConnectedPorts()
 {
   mConnectedPorts.clear();
 
   const char **ports, **connections; //vector of ports and connections
-  vector<string> OutputInput(2); //helper variable
+  vector<string> connectionPair(2); //helper variable
 
   //Get active output ports.
   ports = jack_get_ports (mClient, NULL, NULL, JackPortIsOutput);
@@ -172,11 +179,11 @@ void JcMess::setConnectedPorts()
   for (unsigned int out_i = 0; ports[out_i]; ++out_i) {
     if ((connections = jack_port_get_all_connections(mClient, jack_port_by_name(mClient, ports[out_i]))) != 0) {
       for (unsigned int in_i = 0; connections[in_i]; ++in_i) {
-	OutputInput[0] = ports[out_i];
-	//cout << "Output ===> " << OutputInput[0] << endl;
-	OutputInput[1] = connections[in_i];
-	//cout << "Input ===> " << OutputInput[1] << endl;
-	mConnectedPorts.push_back(OutputInput);
+	connectionPair[0] = ports[out_i];
+	//cout << "Output ===> " << connectionPair[0] << endl;
+	connectionPair[1] = connections[in_i];
+	//cout << "Input ===> " << connectionPair[1] << endl;
+	mConnectedPorts.push_back(connectionPair);
       }
     }
   }
@@ -192,18 +199,14 @@ void JcMess::setConnectedPorts()
 //-------------------------------------------------------------------------------
 void JcMess::disconnectAll()
 {
-  vector<string> OutputInput(2);
+  vector<string> connectionPair(2);
   
-  this->setConnectedPorts();
+  this->getActiveConnectedPorts();
   
   for (vector<vector<string> >::iterator it = mConnectedPorts.begin(); it != mConnectedPorts.end(); ++it) {
-    OutputInput = *it;
+    connectionPair = *it;
     
-    if (jack_disconnect(mClient, OutputInput[0].c_str(), OutputInput[1].c_str())) {
-      cerr << "WARNING! port| " << OutputInput[0]
-	   << " |and port| " << OutputInput[1]
-	   << " |could not be disconnected.\n";
-    }
+    jackDisconnect(connectionPair[0], connectionPair[1], false);
   }
 
 }
@@ -231,7 +234,7 @@ int JcMess::parseTextFile(string InFile)
     return 1;
   }
 
-  vector<string> OutputInput(2);
+  vector<string> connectionPair(2);
   const string delimiter = SEPARATOR ;
 
   //TODO add error checking in getline and string operations
@@ -242,13 +245,13 @@ int JcMess::parseTextFile(string InFile)
     if (line.length() > 0) {
       size_t pos = 0;
       pos = line.find(delimiter);
-      OutputInput[0] = line.substr(0, pos);
+      connectionPair[0] = line.substr(0, pos);
       line.erase(0, pos + delimiter.length());
-      OutputInput[1] = line ;
-      mPortsToConnect.push_back(OutputInput);
+      connectionPair[1] = line ;
+      mPortsToConnect.push_back(connectionPair);
 
-      //cout << OutputInput[0] << endl;
-      //cout << OutputInput[1] << endl;
+      //cout << connectionPair[0] << endl;
+      //cout << connectionPair[1] << endl;
     }
   } 
 
@@ -265,29 +268,42 @@ int JcMess::parseTextFile(string InFile)
  *
  */
 //-------------------------------------------------------------------------------
-void JcMess::connectPorts(string InFile)
+void JcMess::connectPorts(string InFile, string clientName)
 {
-  vector<string> OutputInput(2);
+  vector<string> connectionPair(2);
 
   if ( !(this->parseTextFile(InFile)) ) {  
     for (vector<vector<string> >::iterator it = mPortsToConnect.begin(); it != mPortsToConnect.end(); ++it) {
-      OutputInput = *it;
+      connectionPair = *it;
 
-      //cout << "CON: " <<  OutputInput[0] << " <TO> " <<  OutputInput[1] << endl;
-
-      if (jack_connect(mClient, OutputInput[0].c_str(), OutputInput[1].c_str())) {
-	//Display a warining only if the error is not because the ports are already
-	//connected, in case the program doesn't display anyting.
-	if (EEXIST != 
-	    jack_connect(mClient, OutputInput[0].c_str(), OutputInput[1].c_str())) {
-          cerr << "WARNING! port| " << OutputInput[0]
-	   << " |and port| " << OutputInput[1]
-	   << " |could not be connected.\n";
-	}
+      if (clientName.compare("null") != 0) { //if diff than "null"
+        size_t cl0pos = connectionPair[0].find(clientName);
+        size_t cl1pos = connectionPair[1].find(clientName);
+        if (( cl0pos != string::npos ) || ( cl1pos != string::npos )) {
+          //cout << "CON: " <<  connectionPair[0] << " <TO> " <<  connectionPair[1] << endl;
+          jackConnect(connectionPair[0], connectionPair[1]);
+        }
+      }
+      else {
+        //cout << "CONA: " <<  connectionPair[0] << " <TO> " <<  connectionPair[1] << endl;
+        jackConnect(connectionPair[0], connectionPair[1]);
       }
     }
   }
+}
 
+void JcMess::jackConnect(string connectionFrom, string connectionTo)
+{
+  if (jack_connect(mClient, connectionFrom.c_str(), connectionTo.c_str())) {
+    //Display a warining only if the error is not because the ports are already
+    //connected, in case the program doesn't display anyting.
+    if (EEXIST !=
+        jack_connect(mClient, connectionFrom.c_str(), connectionTo.c_str())) {
+      cerr << "WARNING! port| " << connectionFrom
+       << " |and port| " << connectionTo
+       << " |could not be connected.\n";
+    }
+  }
 }
 
 //-------------------------------------------------------------------------------
@@ -297,28 +313,34 @@ void JcMess::connectPorts(string InFile)
 //-------------------------------------------------------------------------------
 void JcMess::disconnectClient(string clientName)
 {
-    vector<string> OutputInput(2);
+    vector<string> connectionPair(2);
 
-    this->setConnectedPorts();
+    this->getActiveConnectedPorts();
 
     for (vector<vector<string> >::iterator it = mConnectedPorts.begin(); it != mConnectedPorts.end(); ++it){
-        OutputInput = *it;
+        connectionPair = *it;
 
-        size_t cl0pos = OutputInput[0].find(clientName);
-        size_t cl1pos = OutputInput[1].find(clientName);
+        size_t cl0pos = connectionPair[0].find(clientName);
+        size_t cl1pos = connectionPair[1].find(clientName);
         if (( cl0pos != string::npos ) || ( cl1pos != string::npos )) {
-            //cout << " DISCON: " << OutputInput[0] << " <FROM> " << OutputInput[1] << endl;
-            if (jack_disconnect(mClient, OutputInput[0].c_str(), OutputInput[1].c_str()))
-            {
-              cerr << "WARNING! port| " << OutputInput[0]
-	       << " |and port| " << OutputInput[1]
-	       << " |could not be connected.\n";
-            }
-            else
-            {
-              cout << "DISCON: " << OutputInput[0] << " <FROM> " << OutputInput[1] << endl;
-            }
+            //cout << " DISCON: " << connectionPair[0] << " <FROM> " << connectionPair[1] << endl;
+            jackDisconnect(connectionPair[0], connectionPair[1], true);
         }
     }
+}
+
+void JcMess::jackDisconnect(string connectionFrom, string connectionTo, bool verbose)
+{
+  if (jack_disconnect(mClient, connectionFrom.c_str(), connectionTo.c_str()))
+  {
+    cerr << "WARNING! port| " << connectionFrom
+     << " |and port| " << connectionTo
+     << " |could not be connected.\n";
+  }
+  else
+  {
+    if (verbose) 
+      cout << "DISCON: " << connectionFrom << " <FROM> " << connectionTo << endl;
+  }
 }
 
