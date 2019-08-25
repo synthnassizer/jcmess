@@ -124,35 +124,35 @@ void JcMess::writeOutput(string OutFile)
   ofstream file;
   if ( OutFile != "" )
   {
-  file.clear(file.failbit);
-  file.clear(file.badbit);
+    file.clear(file.failbit);
+    file.clear(file.badbit);
 
-  //Write output file
-  string answer = "";
-  //Check for existing file first, and confirm before overwriting
-  if (fileExists(OutFile)) {
-    while ((answer != "yes") && (answer != "no")) {
-      cout << "WARNING: The File " << OutFile
-	   << " exists. Do you want to overwrite it? (yes/no): ";
-      cin >> answer;
+    //Write output file
+    string answer = "";
+    //Check for existing file first, and confirm before overwriting
+    if (fileExists(OutFile)) {
+        while ((answer != "yes") && (answer != "no")) {
+        cout << "WARNING: The File " << OutFile
+        << " exists. Do you want to overwrite it? (yes/no): ";
+        cin >> answer;
+        }
     }
-  }
-  else {
-    answer = "yes";
-  }
+    else {
+        answer = "yes";
+    }
 
-  if (answer == "yes") {
-    //file.open(OutFile.c_str(),fstream::out);
-    file.open(OutFile.c_str());
-    if (file.fail()) {
-      cerr << "Cannot open file for writing: " << endl;
-      exit(1);
+    if (answer == "yes") {
+        //file.open(OutFile.c_str(),fstream::out);
+        file.open(OutFile.c_str());
+        if (file.fail()) {
+        cerr << "Cannot open file for writing: " << endl;
+        exit(1);
+        }
+
+        file << ss.rdbuf();
+        file.close();
+        cout << OutFile << " written/saved to disk." << endl;
     }
-    
-    file << ss.rdbuf();
-    file.close();
-    cout << OutFile << " written/saved to disk." << endl;
-  }
   }
   else
   {

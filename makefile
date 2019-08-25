@@ -4,7 +4,7 @@
 
 EXECUTABLE=jcmess
 CC=g++
-CFLAGS=-c -Wall -Wextra -Wpedantic
+CFLAGS=-Wall -Wextra -Wpedantic
 LDFLAGS=-lasound  -ljack
 SOURCES= \
 	jcmess.cpp \

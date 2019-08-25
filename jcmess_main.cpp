@@ -1,3 +1,4 @@
+
 /*
   jcmess: A simple utility so save your jack-audio mess. Fully written in c++.
 
@@ -82,8 +83,9 @@ void main_dialog( int argc, char* argv[] )
     { "save", required_argument, NULL,  's' },
     { "DisconnectAll", no_argument, NULL,  'D' },
     { "version", no_argument, NULL, 'v' }, // Version Number
-    { "verbose", no_argument, NULL, 'V' }, // Version Number
-    { "help", no_argument, NULL, 'h' }, // Print Help
+    { "print", no_argument, NULL,  'p' },  // print to stdout
+    { "verbose", no_argument, NULL, 'V' }, // print to stdout
+    { "help", no_argument, NULL, 'h' },    // Print Help
     { NULL, 0, NULL, 0 }
   };
 
@@ -97,7 +99,7 @@ void main_dialog( int argc, char* argv[] )
   ///flag followed by ":" -> required to place flag in CLI
   ///flag followed by ""(=nothing) -> no argument
   while ( (ch = getopt_long(argc, argv,
-                            "du:m:l:s:DvVh", longopts, NULL)) != -1 )
+                            "du:m:l:s:pDvVh", longopts, NULL)) != -1 )
     switch (ch) {
     //-------------------------------------------------------
     case 'd':
@@ -119,6 +121,7 @@ void main_dialog( int argc, char* argv[] )
     jcmessClient.writeOutput( optarg );
     break;
     //-------------------------------------------------------
+    case 'p':
     case 'V':
     jcmessClient.writeOutput( "" );
     break;
@@ -187,10 +190,11 @@ void printUsage()
   cout << " -v  --version                 Prints version information" << endl;
   cout << " -l  --load inputfile          Load the connections specified at inputfile" << endl;
   cout << " -s  --save outputfile         Save current connections in output" << endl;
-  cout << " -u  --umount \"client name\"    Disconnect all connections to a specific jack client" << endl;
-  cout << " -m  --mount \"client name\" inputfile   Connect all referrences to jack client, found in inputfile" << endl;
+  cout << " -u  --umount \"client name\"  Disconnect all connections to a specific jack client" << endl;
+  cout << " -m  --mount \"client name\"   inputfile   Connect all referrences to jack client, found in inputfile" << endl;
   cout << " -d  --disconnectall           Disconnect all the connections" << endl;
   cout << " -D  --DisconnectAll           Disconnect all the connections without confirmation" << endl;
+  cout << " -p  --print                   Same as --verbose" << endl;
   cout << " -V  --verbose                 Same as --save but dumps the connections to stdout" << endl;
   cout << "" << endl;
 }
