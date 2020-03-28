@@ -61,14 +61,15 @@ int main(int argc, char** argv)
 void main_dialog( int argc, char* argv[] )
 {
   
-  // If no command arguments are given, print instructions
-  if(argc == 1) {
-    printUsage();
-    std::exit(0);
-  }
-
   //Create JcMess Object for the following flags
   JcMess jcmessClient;
+
+  // If no command arguments are given, print instructions
+  if(argc == 1) {
+    //printUsage();
+    jcmessClient.writeOutput( "" );
+    std::exit(0);
+  }
 
   // Usage example at:
   // http://www.gnu.org/software/libc/manual/html_node/Getopt-Long-Option-Example.html#Getopt-Long-Option-Example
