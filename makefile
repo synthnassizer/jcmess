@@ -3,9 +3,9 @@
 #############################################################################
 
 EXECUTABLE=jcmess
-CC=g++
-CFLAGS=-Wall -Wextra -Wpedantic
-LDFLAGS=-lasound  -ljack
+#CC=g++
+CXXFLAGS+=-Wall -Wextra -Wpedantic
+LDFLAGS+=-lasound -ljack
 SOURCES= \
 	jcmess.cpp \
 	jcmess_main.cpp
@@ -21,13 +21,13 @@ OBJECTS=$(SOURCES:.cpp=.o)
 all: $(SOURCES) $(EXECUTABLE)
         
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) -o $@ $(OBJECTS) $(LDFLAGS)
+	$(CXX) -o $@ $(OBJECTS) $(CXXFLAGS) $(LDFLAGS)
 
 jcmess.o: jcmess.cpp jcmess.h
-	$(CC) -c $(CFLAGS) -o "$@" "$<"
+	$(CXX) -c $(CXXFLAGS) -o "$@" "$<"
 
 jcmess_main.o: jcmess_main.cpp jcmess.h
-	$(CC) -c $(CFLAGS) -o "$@" "$<"
+	$(CXX) -c $(CXXFLAGS) -o "$@" "$<"
 
 clean:
 	$(RM) $(EXECUTABLE) $(OBJECTS)
