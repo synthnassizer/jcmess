@@ -39,17 +39,14 @@
 #include "jcmess.h"
 
 #include <stdlib.h>
+#include <string.h>
 #include <fstream>
 #include <sstream> 
 #include <sys/stat.h>
 
-#define SEPARATOR " -#- "
 
-//-------------------------------------------------------------------------------
-/*! \brief Constructs a JcMess object that has a jack client.
- *
- */
-//-------------------------------------------------------------------------------
+using namespace std;
+
 JcMess::JcMess()
 {
   //Open a client connection to the JACK server.  Starting a
@@ -68,23 +65,11 @@ JcMess::JcMess()
 }
 
 
-//-------------------------------------------------------------------------------
-/*! \brief Distructor closes the jcmess jack audio client.
- *
- */
-//-------------------------------------------------------------------------------
 JcMess::~JcMess()
 {
   if (jack_client_close(mClient))
     cerr << "ERROR: Could not close the hidden jcmess jack client." << endl;
 }
-
-
-//-------------------------------------------------------------------------------
-/*! \brief Write an XML file with the name specified at OutFile.
- *
- */
-//-------------------------------------------------------------------------------
 
 
 // Function: fileExists
@@ -159,13 +144,7 @@ void JcMess::writeOutput(string OutFile)
     cout << ss.str() ;
   }
 }
-  
 
-//-------------------------------------------------------------------------------
-/*! \brief Set list of ouput ports that have connections.
- *
- */
-//-------------------------------------------------------------------------------
 void JcMess::getActiveConnectedPorts()
 {
   mConnectedPorts.clear();
@@ -191,12 +170,6 @@ void JcMess::getActiveConnectedPorts()
   free(ports);
 }
 
-
-//-------------------------------------------------------------------------------
-/*! \brief Disconnect all the clients.
- *
- */
-//-------------------------------------------------------------------------------
 void JcMess::disconnectAll()
 {
   vector<string> connectionPair(2);
@@ -292,6 +265,25 @@ void JcMess::connectPorts(string InFile, string clientName)
   }
 }
 
+void JcMess::connectPortStr(string connectionStr)
+{
+    size_t sepPos = connectionStr.find(SEPARATOR);
+    
+    if (sepPos != string::npos)
+    {
+        size_t sepLen = strlen(SEPARATOR);
+        string connectionFrom = connectionStr.substr(0,sepPos);
+        string connectionTo = connectionStr.substr(sepPos + sepLen);
+        //cout << "conFrom: " << connectionFrom <<endl;
+        //cout << "conTo: " << connectionTo <<endl;
+        jackConnect(connectionFrom, connectionTo);
+    }
+    else
+    {
+        cerr << "port SEPARATOR \"" << SEPARATOR << "\" missing." << endl;
+    }
+}
+
 void JcMess::jackConnect(string connectionFrom, string connectionTo)
 {
   if (jack_connect(mClient, connectionFrom.c_str(), connectionTo.c_str())) {
@@ -306,11 +298,6 @@ void JcMess::jackConnect(string connectionFrom, string connectionTo)
   }
 }
 
-//-------------------------------------------------------------------------------
-/*! \brief Disconnect client with name "clientName"
- *
- */
-//-------------------------------------------------------------------------------
 void JcMess::disconnectClient(string clientName)
 {
     vector<string> connectionPair(2);

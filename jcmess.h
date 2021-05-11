@@ -43,12 +43,11 @@
 #include <string>
 #include <errno.h>
 
-#include <string>
 #include <vector>
 
 #include <jack/jack.h>
 
-using namespace std;
+#define SEPARATOR " -#- "
 
 const int Indent = 2;
 
@@ -69,25 +68,26 @@ public:
   virtual ~JcMess();
 
   void disconnectAll();
-  void writeOutput(string OutFile);
-  void connectPorts(string InFile,string clientName);
-  void disconnectClient(string clientName);
+  void writeOutput(std::string OutFile);
+  void connectPorts(std::string InFile,std::string clientName);
+  void connectPortStr(std::string connectionStr);
+  void disconnectClient(std::string clientName);
 
 private:
   void getActiveConnectedPorts();
-  int parseTextFile(string InFile);
-  void jackConnect(string connectionFrom, string connectionTo);
-  void jackDisconnect(string connectionFrom, string connectionTo, bool verbose);
+  int parseTextFile(std::string InFile);
+  void jackConnect(std::string connectionFrom, std::string connectionTo);
+  void jackDisconnect(std::string connectionFrom, std::string connectionTo, bool verbose);
 
   jack_client_t *mClient; //Class client
   jack_status_t mStatus; //Class client status
 
   //Vectors of Connected Ports and Ports to connects
-  //This are a matrix (Nx2) of string like this:
+  //This are a matrix (Nx2) of std::string like this:
   //OuputPort1 InputPort1
   // ...
   //OuputPortN InputPortN
-  vector<vector<string> > mConnectedPorts;
-  vector<vector<string> > mPortsToConnect;
+  std::vector<std::vector<std::string> > mConnectedPorts;
+  std::vector<std::vector<std::string> > mPortsToConnect;
 };
 #endif //__JCMESS_H
